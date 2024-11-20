@@ -1,6 +1,7 @@
 package com.udacity.jwdnd.course1.cloudstorage.mapper;
 
 import com.udacity.jwdnd.course1.cloudstorage.model.Files;
+import com.udacity.jwdnd.course1.cloudstorage.model.Users;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -25,5 +26,8 @@ public interface FilesMapper {
 
     @Select("SELECT * FROM FILES WHERE fileid = #{fileid}")
     Files getFileid(Integer fileid);
+
+    @Select("SELECT * FROM FILES WHERE filename = #{filename}")
+    Users getFiles(String filename);
 
 }

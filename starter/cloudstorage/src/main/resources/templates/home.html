@@ -40,11 +40,20 @@
                                 </div>
                             </div>
                         </form>
-                        <div id="success-msg" th:if="${uploadSuccess}" class="alert alert-dark">
+                        <div id="success-msg" th:if="${fileSuccess}" class="alert alert-dark">
                             Uploaded the file successfully!
                         </div>
-                        <div id="error-msg" th:if="${uploadError}" class="alert alert-danger">
+                        <div id="error-msg" th:if="${fileError}" class="alert alert-danger">
                             Could not upload the file.
+                        </div>
+                        <div id="duplicate-file-error-msg" th:if="${fileNameExistsError}" class="alert alert-danger">
+                            The filename already exists.
+                        </div>
+                        <div id="delete-success-msg" th:if="${deleteSuccess}" class="alert alert-dark">
+                            Deleted the file successfully!
+                        </div>
+                        <div id="delete-error-msg" th:if="${deleteError}" class="alert alert-danger">
+                            Could not delete the file.
                         </div>
                         <div class="table-responsive">
                             <table class="table table-striped" id="fileTable">
@@ -83,12 +92,12 @@
                                 <tbody th:each="note:${notes}">
                                 <tr>
                                         <td>
-                                            <button type="button" class="btn btn-success"
+                                            <button type="button" class="btn btn-success" id = "edit-note-button"
                                                     th:onclick="javascript:showNoteModal([[${note.noteid}]],
                                                     [[${note.notetitle}]],[[${note.notedescription}]])">Edit</button>
-                                            <a class="btn btn-danger" th:href="@{'/notes/' + ${note.noteid} + '/deleteNote'}">Delete</a>
+                                            <a id="deleteNoteSubmit" class="btn btn-danger" th:href="@{'/notes/' + ${note.noteid} + '/deleteNote'}">Delete</a>
                                         </td>
-                                    <th scope="row" th:text="${note.notetitle}">Example Note Title</th>
+                                    <th id="note-title-table" scope="row" th:text="${note.notetitle}">Example Note Title</th>
                                     <td th:text="${note.notedescription}">Example Note Description </td>
                                 </tr>
                                 </tbody>
@@ -127,7 +136,7 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nav-credentials" role="tabpanel" aria-labelledby="nav-credentials-tab">
-                        <button style="margin: 0.25em;" type="button" class="btn btn-info float-right" onclick="showCredentialModal()">
+                        <button style="margin: 0.25em;" type="button" class="btn btn-info float-right" id ="add-credential-button" onclick="showCredentialModal()">
                             + Add a New Credential
                         </button>
 
@@ -144,14 +153,14 @@
                                 <tbody>
                                 <tr th:each="credential : ${credentials}">
                                     <td>
-                                        <button type="button" class="btn btn-success"
+                                        <button type="button" class="btn btn-success" id = "edit-credentials-button"
                                                 th:onclick="javascript:showCredentialModal([[${credential.credentialid}]],
-                                                    [[${credential.url}]],[[${credential.username}]],[[${encryptionService.decryptValue(credential.password, credential.key)}]])">Edit</button>
-                                        <a class="btn btn-danger" th:href="@{'/credentials/' + ${credential.credentialid} + '/deleteCredential'}">Delete</a>
+                                                    [[${credential.url}]],[[${credential.username}]],[[${credential.password}]])">Edit</button>
+                                        <a id="deleteCredentialSubmit" class="btn btn-danger" th:href="@{'/credentials/' + ${credential.credentialid} + '/deleteCredential'}">Delete</a>
                                     </td>
-                                    <th scope="row" th:text="${credential.url}">Example Credential URL</th>
-                                    <th scope="row" th:text="${credential.username}">Example Credential Username</th>
-                                    <th scope="row" th:text="${credential.password}">Example Credential Password</th>
+                                    <th id="credential-url-table" scope="row" th:text="${credential.url}">Example Credential URL</th>
+                                    <th id="credential-username-table" scope="row" th:text="${credential.username}">Example Credential Username</th>
+                                    <th id="credential-password-table" scope="row" th:text="${credential.password}">Example Credential Password</th>
                                 </tr>
                                 </tbody>
                             </table>

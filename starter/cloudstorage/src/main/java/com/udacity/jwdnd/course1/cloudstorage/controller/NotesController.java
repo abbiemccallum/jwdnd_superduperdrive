@@ -41,7 +41,6 @@ public class NotesController {
         }
     }
 
-    //TODO add error handling
     @GetMapping("/notes/{noteid}/deleteNote")
     public String deleteNote(@PathVariable Integer noteid, Model model) {
         this.notesService.deleteNote(noteid);

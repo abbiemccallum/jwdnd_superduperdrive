@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,33 +35,41 @@ public class FilesController {
         this.storageService = storageService;
     }
 
-// TODO fix success / error messages
     @PostMapping("files/uploadFile")
-    public String uploadFile(@RequestParam("fileUpload") MultipartFile file, Authentication authentication, Model model) {
+    public String uploadFile(@RequestParam("fileUpload") MultipartFile file, Authentication authentication, Model model, RedirectAttributes redirectAttributes) throws IOException {
+        String fileError = null;
         Users user = this.userService.getUser(authentication.getName());
         Integer userId = user.getUserid();
-        try {
-            storageService.saveFile(file, userId);
+        if(!storageService.isFilenameAvailable(file.getOriginalFilename())){
+            fileError = "The filename already exists.";
+            redirectAttributes.addFlashAttribute("fileNameExistsError", true);
 
-            model.addAttribute("uploadSuccess", true);
-            return "redirect:/home";
-        } catch (Exception e) {
-            model.addAttribute("uploadError", true);
-            return "redirect:/home";
         }
+
+        if(fileError == null){
+            storageService.saveFile(file, userId);
+        }
+
+        if (fileError != null){
+            model.addAttribute("fileError", true);
+            return "redirect:/home";
+        } else{
+            redirectAttributes.addFlashAttribute("fileSuccess", true);
+
+        }
+        return "redirect:/home";
     }
 
-// TODO fix success / error messages
     @GetMapping("files/{fileid}/deleteFile")
-    public String deleteFile(Files file, Authentication authentication, Model model) {
+    public String deleteFile(Files file, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
         Users user = this.userService.getUser(authentication.getName());
         Integer userId = user.getUserid();
         try {
             storageService.deleteFile(file, userId);
-            model.addAttribute("deleteSuccess", true);
+            redirectAttributes.addFlashAttribute("deleteSuccess", true);
             return "redirect:/home";
         } catch (Exception e) {
-            model.addAttribute("uploadError", true);
+            redirectAttributes.addFlashAttribute("deleteError", true);
             return "redirect:/home";
         }
     }

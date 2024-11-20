@@ -43,4 +43,8 @@ public class FilesStorageServiceImpl implements FilesService {
         return filesMapper.getFileid(fileid);
     }
 
+    public boolean isFilenameAvailable(String filename) {
+        return filesMapper.getFiles(filename) == null;
+    }
+
 }

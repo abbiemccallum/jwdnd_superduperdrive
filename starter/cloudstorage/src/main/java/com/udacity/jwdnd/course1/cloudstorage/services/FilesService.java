@@ -17,4 +17,6 @@ public interface FilesService {
 
     Files getFilebyFileid(Integer fileid);
 
+    boolean isFilenameAvailable(String filename);
+
 }

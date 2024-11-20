@@ -1,12 +1,13 @@
 package com.udacity.jwdnd.course1.cloudstorage;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
-public class HomePage {
+public class NotesPage {
 
     // Note elements
     @FindBy(css = "#nav-notes-tab")
@@ -21,24 +22,14 @@ public class HomePage {
     private WebElement noteDescription;
     @FindBy(css="#noteSubmit")
     private WebElement noteSubmit;
-    @FindBy (css="#add-note-button")
+    @FindBy (css="#edit-note-button")
     private WebElement editButton;
-    @FindBy(css = "#edit-note-id")
-    private WebElement editNoteId;
-    @FindBy(css = "#edit-note-title")
-    private WebElement editTitle;
-    @FindBy(css="#edit-note-description")
-    private WebElement editDescription;
-    @FindBy(css="#editNoteSubmit")
-    private WebElement editSubmit;
-    @FindBy(css = "#delete-note-id")
-    private WebElement deleteNoteId;
     @FindBy(css="#deleteNoteSubmit")
     private WebElement deleteSubmit;
 
     private WebDriver driver;
 
-    public HomePage(WebDriver driver) {
+    public NotesPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
         this.driver = driver;
     }
@@ -61,14 +52,19 @@ public class HomePage {
     //edit note
     public void editNote(String title, String description){
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", editButton);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].value='" + title + "';", editTitle);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].value='" + description + "';", editDescription);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", editSubmit);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].value='" + title + "';", noteTitle);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].value='" + description + "';", noteDescription);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", noteSubmit);
     }
 
 
     //delete note
     public void deleteNote(){
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", deleteSubmit);
+    }
+
+    public void getNoteTitle(){
+        getNotesTab();
+        driver.findElement(By.id("note-title-table")).getAttribute("innerHTML");
     }
 }

@@ -2,21 +2,23 @@ package com.udacity.jwdnd.course1.cloudstorage;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CloudStorageApplicationTests {
 
@@ -25,7 +27,6 @@ class CloudStorageApplicationTests {
 
 	private WebDriver driver;
 
-	public String baseURL;
 	public String username = "username1";
 	public String password = "thisismypassword";
 	public  String firstName = "Jane";
@@ -227,7 +228,7 @@ class CloudStorageApplicationTests {
 
 	}
 
-	//TODD
+
 	// Write a test that verifies that an unauthorized user can only access the login and signup pages.
 	@Test
 	public void testUnauthorizedUser() {
@@ -244,45 +245,120 @@ class CloudStorageApplicationTests {
 
 	}
 
-	public void login(){
-		doLogIn(username,password);
-	}
-
-	public void signup(){
-	doMockSignUp(firstName, lastName, username, password);
-	}
 
 	// Write a test that signs up a new user, logs in,
 	// verifies that the home page is accessible, logs out,
 	// and verifies that the home page is no longer accessible.
-	@Test
-	public void testUserSignupLoginAndLogout() {
+
+	public void userSignupLogin() {
 		doMockSignUp(firstName, lastName, username, password);
 		doLogIn(username, password);
+	}
+
+	public void addNewNote() {
+		NotesPage notesPage = new NotesPage(driver);
+		createNote(notesPage);
+		driver.get("http://localhost:" + this.port + "/home");
+		notesPage.getNotesTab();
+	}
+
+	@Test
+	public void testUserSignupLoginAndLogout() {
+		userSignupLogin();
 		doLogOut();
 		// Check if we have been redirected after logging out
 		assertNotEquals("http://localhost:" + this.port + "/home", driver.getCurrentUrl());
+	}
+
+	public void createNote(NotesPage notesPage){
+		notesPage.createNote("Note title","Note description");
 
 	}
 
-	// NOTES TAB
-	//Write a test that creates a note, and verifies it is displayed.
 	@Test
-	public void createNote(){
-		doMockSignUp(firstName, lastName, username, password);
-		doLogIn(username, password);
-		HomePage homePage = new HomePage(driver);
-		homePage.createNote("Note title","Note description");
-//		Assertions.assertEquals("You successfully added a new note", driver.findElement(By.id("success-msg")).getText());
-		driver.get("http://localhost:" + this.port + "/home");
-		homePage.getNotesTab();
-		Assertions.assertEquals("Note title",  driver.findElement(By.id("note-title")).getAttribute("innerHTML"));
+	public void testAddNewNote(){
+		userSignupLogin();
+		addNewNote();
+		Assertions.assertEquals("Note title",  driver.findElement(By.id("note-title-table")).getAttribute("innerHTML"));
 
 	}
-
 
 	//Write a test that edits an existing note and verifies that the changes are displayed.
+	@Test
+	public void testEditNote(){
+		userSignupLogin();
+		addNewNote();
+		NotesPage notesPage = new NotesPage(driver);
+		notesPage.editNote("New title", "Note description");
+		driver.get("http://localhost:" + this.port + "/home");
+		notesPage.getNotesTab();
+		Assertions.assertEquals("New title",  driver.findElement(By.id("note-title-table")).getAttribute("innerHTML"));
 
+
+	}
 	//Write a test that deletes a note and verifies that the note is no longer displayed.
+
+	@Test
+	public void testDeleteNote(){
+		userSignupLogin();
+		addNewNote();
+		NotesPage notesPage = new NotesPage(driver);
+		notesPage.deleteNote();
+		driver.get("http://localhost:" + this.port + "/home");
+		notesPage.getNotesTab();
+		assertThrows(NoSuchElementException.class, notesPage::getNoteTitle);
+
+
+	}
+	//Credentials Test
+
+	public void createCredential(CredentialsPage credentialsPage){
+		credentialsPage.createCredentials("https://hello.com","username123", "password123");
+	}
+
+	public void addNewCredentials(){
+		CredentialsPage credentialsPage = new CredentialsPage(driver);
+		createCredential(credentialsPage);
+		driver.get("http://localhost:" + this.port + "/home");
+		credentialsPage.getCredentialsTab();
+	}
+
+
+	//Write a test that creates a set of credentials, verifies that they are displayed, and verifies that the displayed password is encrypted.
+	@Test
+	public void testAddNewCredentials(){
+		userSignupLogin();
+		addNewCredentials();
+		Assertions.assertEquals("https://hello.com",  driver.findElement(By.id("credential-url-table")).getAttribute("innerHTML"));
+		Assertions.assertEquals("username123",  driver.findElement(By.id("credential-username-table")).getAttribute("innerHTML"));
+		Assertions.assertNotEquals("password123",  driver.findElement(By.id("credential-password-table")).getAttribute("innerHTML"));
+	}
+
+	//Write a test that views an existing set of credentials, verifies that the viewable password is unencrypted, edits the credentials, and verifies that the changes are displayed.
+	@Test
+	public void testEditCredentials(){
+		userSignupLogin();
+		addNewCredentials();
+		CredentialsPage credentialsPage = new CredentialsPage(driver);
+		credentialsPage.viewCredentials();
+		Assertions.assertNotEquals("password123",  driver.findElement(By.id("credential-password-table")).getAttribute("innerHTML"));
+		credentialsPage.editCredentials("https://goodbye.com", "editUsername123", "editPassword123");
+		driver.get("http://localhost:" + this.port + "/home");
+		credentialsPage.getCredentialsTab();
+		Assertions.assertEquals("https://goodbye.com",  driver.findElement(By.id("credential-url-table")).getAttribute("innerHTML"));
+
+	}
+
+	//Write a test that deletes an existing set of credentials and verifies that the credentials are no longer displayed.
+	@Test
+	public void testDeleteCredential(){
+		userSignupLogin();
+		addNewCredentials();
+		CredentialsPage credentialsPage = new CredentialsPage(driver);
+		credentialsPage.deleteCredentials();
+		driver.get("http://localhost:" + this.port + "/home");
+		credentialsPage.getCredentialsTab();
+		assertThrows(NoSuchElementException.class, credentialsPage::getCredentialUrl);
+	}
 
 }

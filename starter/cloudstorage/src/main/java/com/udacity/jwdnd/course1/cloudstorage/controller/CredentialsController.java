@@ -23,7 +23,6 @@ public class CredentialsController {
         this.userService = userService;
     }
 
-    // TODO implement encryption
     @PostMapping("/credentials/addCredentials")
     public String addCredential(Authentication authentication, Credentials credentials, Model model) {
         Users user = this.userService.getUser(authentication.getName());
@@ -44,7 +43,6 @@ public class CredentialsController {
 
 
 
-    //TODO add error handling
     @GetMapping("/credentials/{credentialid}/deleteCredential")
     public String deleteCredential(@PathVariable Integer credentialid, Model model) {
         this.credentialsService.deleteCredentials(credentialid);
