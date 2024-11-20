@@ -13,6 +13,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CloudStorageApplicationTests {
 
@@ -20,6 +24,14 @@ class CloudStorageApplicationTests {
 	private int port;
 
 	private WebDriver driver;
+
+	public String baseURL;
+	public String username = "username1";
+	public String password = "thisismypassword";
+	public  String firstName = "Jane";
+	public String lastName ="Smith";
+
+
 
 	@BeforeAll
 	static void beforeAll() {
@@ -41,7 +53,7 @@ class CloudStorageApplicationTests {
 	@Test
 	public void getLoginPage() {
 		driver.get("http://localhost:" + this.port + "/login");
-		Assertions.assertEquals("Login", driver.getTitle());
+		assertEquals("Login", driver.getTitle());
 	}
 
 	/**
@@ -90,7 +102,6 @@ class CloudStorageApplicationTests {
 	}
 
 	
-	
 	/**
 	 * PLEASE DO NOT DELETE THIS method.
 	 * Helper method for Udacity-supplied sanity checks.
@@ -130,13 +141,15 @@ class CloudStorageApplicationTests {
 	 * Read more about the requirement in the rubric: 
 	 * https://review.udacity.com/#!/rubrics/2724/view 
 	 */
+
+
 	@Test
 	public void testRedirection() {
 		// Create a test account
 		doMockSignUp("Redirection","Test","RT","123");
 		
 		// Check if we have been redirected to the log in page.
-		Assertions.assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
+		assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
 	}
 
 	/**
@@ -200,6 +213,76 @@ class CloudStorageApplicationTests {
 
 	}
 
+	private void doLogOut()
+	{
+		// Log out
+		driver.get("http://localhost:" + this.port + "/home");
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 2);
 
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("buttonLogout")));
+		WebElement logoutOutButton = driver.findElement(By.id("buttonLogout"));
+		logoutOutButton.click();
+
+		webDriverWait.until(ExpectedConditions.titleContains("Login"));
+
+	}
+
+	//TODD
+	// Write a test that verifies that an unauthorized user can only access the login and signup pages.
+	@Test
+	public void testUnauthorizedUser() {
+		// check unauthorized user can access sign up
+		driver.get("http://localhost:" + this.port + "/signup");
+		assertEquals("Sign Up", driver.getTitle());
+
+		// check unauthorized user can access login
+		driver.get("http://localhost:" + this.port + "/login");
+		assertEquals("Login", driver.getTitle());
+
+		// check unauthorized user can access login
+		assertNotEquals("http://localhost:" + this.port + "/home", driver.getCurrentUrl());
+
+	}
+
+	public void login(){
+		doLogIn(username,password);
+	}
+
+	public void signup(){
+	doMockSignUp(firstName, lastName, username, password);
+	}
+
+	// Write a test that signs up a new user, logs in,
+	// verifies that the home page is accessible, logs out,
+	// and verifies that the home page is no longer accessible.
+	@Test
+	public void testUserSignupLoginAndLogout() {
+		doMockSignUp(firstName, lastName, username, password);
+		doLogIn(username, password);
+		doLogOut();
+		// Check if we have been redirected after logging out
+		assertNotEquals("http://localhost:" + this.port + "/home", driver.getCurrentUrl());
+
+	}
+
+	// NOTES TAB
+	//Write a test that creates a note, and verifies it is displayed.
+	@Test
+	public void createNote(){
+		doMockSignUp(firstName, lastName, username, password);
+		doLogIn(username, password);
+		HomePage homePage = new HomePage(driver);
+		homePage.createNote("Note title","Note description");
+//		Assertions.assertEquals("You successfully added a new note", driver.findElement(By.id("success-msg")).getText());
+		driver.get("http://localhost:" + this.port + "/home");
+		homePage.getNotesTab();
+		Assertions.assertEquals("Note title",  driver.findElement(By.id("note-title")).getAttribute("innerHTML"));
+
+	}
+
+
+	//Write a test that edits an existing note and verifies that the changes are displayed.
+
+	//Write a test that deletes a note and verifies that the note is no longer displayed.
 
 }
