@@ -10,7 +10,10 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EncryptionService {
@@ -46,5 +49,27 @@ public class EncryptionService {
         }
 
         return new String(decryptedValue);
+    }
+
+    public Map<String, String> encryptPassword(String password) {
+        try {
+            // Generate a random salt
+            String key = generateKey();
+            String encryptedPassword = encryptValue(password, key);
+            Map<String, String> result = new HashMap<>();
+            result.put("encryptedPassword", encryptedPassword);
+            result.put("key", key);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error encrypting password", e);
+            return null;
+        }
+    }
+
+    private String generateKey() {
+        SecureRandom random = new SecureRandom();
+        byte[] keyBytes = new byte[16];  // 16-byte salt
+        random.nextBytes(keyBytes);
+        return Base64.getEncoder().encodeToString(keyBytes);
     }
 }

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CredentialsService {
@@ -21,46 +23,64 @@ public class CredentialsService {
 
 
     public void addCredentials(Credentials credentials, Integer userid) {
+        // Encrypt the password with a unique salt
+        Map<String, String> encryptedData = encryptionService.encryptPassword(credentials.getPassword());
+        String encryptedPassword = encryptedData.get("encryptedPassword");
+        String key = encryptedData.get("key");
 
-        //generate key
-        SecureRandom random = new SecureRandom();
-        byte[] key = new byte[16];
-        random.nextBytes(key);
-        String encryptKey = Base64.getEncoder().encodeToString(key);
-        String encryptedPassword = encryptionService.encryptValue(credentials.getPassword(), encryptKey);
-        //set key and encrypted password
-        credentials.setKey(encryptKey);
         credentials.setPassword(encryptedPassword);
-
-        Credentials newCredentials = new Credentials(null, credentials.getUrl(), credentials.getUsername(), encryptKey, encryptedPassword, userid);
-        credentialsMapper.addCredential(newCredentials);
+        credentials.setKey(key);
+        credentialsMapper.addCredential(credentials);
     }
 
     public List<Credentials> getCredentials(Integer userid) {
-        return credentialsMapper.getAllCredentials();
+        List<Credentials> credentialsList = credentialsMapper.getAllCredentials();
+
+        // Decrypt password when displaying/editing
+        for (Credentials credential : credentialsList) {
+            String decryptedPassword = encryptionService.decryptValue(credential.getPassword(), credential.getKey());
+            credential.setPassword(decryptedPassword);
+        }
+
+        return credentialsList;
     }
 
     public void deleteCredentials(Integer credentialid) {
         credentialsMapper.delete(credentialid);
     }
 
-    public Credentials getCredential(Integer credentialid) {
+    public Credentials getCredentialsbyId(Integer credentialid) {
         return credentialsMapper.getCredential(credentialid);
     }
 
-    public void updateCredential(Credentials credentials, Integer userid) {
-        //generate key
-        SecureRandom random = new SecureRandom();
-        byte[] key = new byte[16];
-        random.nextBytes(key);
-        String encryptKey = Base64.getEncoder().encodeToString(key);
-
-        Credentials updatedCredential = credentialsMapper.getCredential(credentials.getCredentialid());
-        updatedCredential.setKey(encryptKey);
-        updatedCredential.setPassword(encryptionService.encryptValue(credentials.getPassword(),encryptKey));
-        updatedCredential.setUrl(credentials.getUrl());
-        updatedCredential.setUsername(credentials.getUsername());
-        credentialsMapper.updateCredential(updatedCredential);
+    public List<Credentials> getCredentialsEncrypted(Integer userid) {
+        return credentialsMapper.getAllCredentials();
     }
 
+    public List<Credentials> getCredentialsDecrypted(Integer userid) {
+        List<Credentials> credentialsList = credentialsMapper.getAllCredentials();
+
+        // Decrypt password when displaying/editing
+        for (Credentials credential : credentialsList) {
+            String decryptedPassword = encryptionService.decryptValue(credential.getPassword(), credential.getKey());
+            credential.setPassword(decryptedPassword);
+        }
+
+        return credentialsList;
+    }
+    public Credentials getCredentialbyId(Integer credentialid) {
+        Credentials credential = credentialsMapper.getCredential(credentialid);
+        if (credential != null) {
+            String decryptedPassword = encryptionService.decryptValue(credential.getPassword(), credential.getKey());
+            credential.setPassword(decryptedPassword);
+        }
+        return credential;
+    }
+
+    public void updateCredential(Credentials credential, Integer userid) {
+        Map<String, String> encryptedData = encryptionService.encryptPassword(credential.getPassword());
+        credential.setPassword(encryptedData.get("encryptedPassword"));
+        credential.setKey(encryptedData.get("key"));
+        credentialsMapper.updateCredential(credential);
+    }
 }

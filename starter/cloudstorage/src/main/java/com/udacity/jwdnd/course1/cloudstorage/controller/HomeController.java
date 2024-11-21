@@ -32,7 +32,7 @@ public class HomeController {
 //        if (user!=null){
             model.addAttribute("files", this.filesService.getFiles(user.getUserid()));
             model.addAttribute("notes", this.notesService.getNotes(user.getUserid()));
-            model.addAttribute("credentials", this.credentialsService.getCredentials(user.getUserid()));
+            model.addAttribute("credentials", this.credentialsService.getCredentialsEncrypted(user.getUserid()));
             model.addAttribute("encryptionService", this.encryptionService);
 
             return "home";

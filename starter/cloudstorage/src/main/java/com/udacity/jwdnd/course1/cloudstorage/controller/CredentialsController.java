@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.List;
+
 @Controller
 public class CredentialsController {
     
@@ -28,9 +30,9 @@ public class CredentialsController {
         Users user = this.userService.getUser(authentication.getName());
         Integer userid = user.getUserid();
         Integer credentialid = credentials.getCredentialid();
-        Credentials existingCredential = credentialsService.getCredential(credentialid);
+//        Credentials existingCredential = credentialsService.getCredentials(credentialid);
 
-        if(existingCredential==null) {
+        if(credentialid==null) {
             this.credentialsService.addCredentials(credentials, userid);
             model.addAttribute("successMessage", true);
             return "result";

@@ -155,7 +155,7 @@
                                     <td>
                                         <button type="button" class="btn btn-success" id = "edit-credentials-button"
                                                 th:onclick="javascript:showCredentialModal([[${credential.credentialid}]],
-                                                    [[${credential.url}]],[[${credential.username}]],[[${credential.password}]])">Edit</button>
+                                                    [[${credential.url}]],[[${credential.username}]],[[${encryptionService.decryptValue(credential.password, credential.key)}]])">Edit</button>
                                         <a id="deleteCredentialSubmit" class="btn btn-danger" th:href="@{'/credentials/' + ${credential.credentialid} + '/deleteCredential'}">Delete</a>
                                     </td>
                                     <th id="credential-url-table" scope="row" th:text="${credential.url}">Example Credential URL</th>
