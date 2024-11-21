@@ -30,13 +30,18 @@ public class NotesController {
         Integer noteid = notes.getNoteid();
         Notes existingNote = notesService.getNote(noteid);
 
-        if(existingNote==null) {
-            this.notesService.addNote(notes, userid);
-            model.addAttribute("successMessage", true);
-            return "result";
-        }else{
-            this.notesService.updateNote(notes, userid);
-            model.addAttribute("successMessage", true);
+        try{
+            if(existingNote==null) {
+                this.notesService.addNote(notes, userid);
+                model.addAttribute("successMessage", true);
+                return "result";
+            }else{
+                this.notesService.updateNote(notes, userid);
+                model.addAttribute("successMessage", true);
+                return "result";
+            }
+        } catch (Exception e){
+            model.addAttribute("successMessage", false);
             return "result";
         }
     }
